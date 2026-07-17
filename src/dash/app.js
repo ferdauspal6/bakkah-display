@@ -1,7 +1,6 @@
 import Alpine from 'alpinejs'
 import { sidebarComponent } from './components/sidebar.js'
 import { navbarComponent } from './components/navbar.js'
-import { modalComponent } from './components/modal.js'
 import { drawerComponent } from './components/drawer.js'
 import { datatableComponent } from './components/datatable.js'
 import { displaysPage } from './pages/displays.js'
@@ -11,7 +10,6 @@ import { getState, subscribe } from '../shared/store.js'
 
 Alpine.data('sidebar', sidebarComponent)
 Alpine.data('navbar', navbarComponent)
-Alpine.data('modal', modalComponent)
 Alpine.data('drawer', drawerComponent)
 Alpine.data('datatable', datatableComponent)
 Alpine.data('displaysPage', displaysPage)

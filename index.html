@@ -150,9 +150,9 @@
           </div>
 
           <!-- Modal -->
-          <div x-ref="modal" x-data="modal" x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click="handleBackdropClick">
+          <div x-show="modalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click="handleBackdropClick">
             <div class="card w-full max-w-lg mx-4 p-6 fade-in" @click.stop>
-              <h3 class="text-lg font-semibold mb-6" x-text="title"></h3>
+              <h3 class="text-lg font-semibold mb-6" x-text="modalTitle"></h3>
               <div class="space-y-4">
                 <div>
                   <label class="block text-sm font-medium text-[#9ca3af] mb-1.5">Name</label>
@@ -169,7 +169,7 @@
               </div>
               <div class="flex justify-end gap-3 mt-6">
                 <button @click="closeModal" class="btn btn-ghost">Cancel</button>
-                <button @click="$root.save()" class="btn btn-primary">
+                <button @click="save()" class="btn btn-primary">
                   <span x-text="editing ? 'Update' : 'Create'"></span>
                 </button>
               </div>
@@ -278,9 +278,9 @@
           </template>
 
           <!-- Slide Modal -->
-          <div x-ref="modal" x-data="modal" x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click="handleBackdropClick">
+          <div x-show="modalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click="handleBackdropClick">
             <div class="card w-full max-w-2xl mx-4 p-6 fade-in max-h-[90vh] overflow-y-auto" @click.stop>
-              <h3 class="text-lg font-semibold mb-6" x-text="title"></h3>
+              <h3 class="text-lg font-semibold mb-6" x-text="modalTitle"></h3>
               <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                   <div>
@@ -362,7 +362,7 @@
               </div>
               <div class="flex justify-end gap-3 mt-6">
                 <button @click="closeModal" class="btn btn-ghost">Cancel</button>
-                <button @click="$root.save()" class="btn btn-primary">
+                <button @click="save()" class="btn btn-primary">
                   <span x-text="editing ? 'Update' : 'Create'"></span>
                 </button>
               </div>

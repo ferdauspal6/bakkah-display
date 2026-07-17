@@ -11,6 +11,8 @@ export function displaysPage() {
     search: '',
     page: 1,
     perPage: 10,
+    modalOpen: false,
+    modalTitle: '',
 
     async init() {
       await this.load()
@@ -53,7 +55,8 @@ export function displaysPage() {
     openCreate() {
       this.editing = null
       this.form = { name: '', slug: '', description: '' }
-      this.$refs.modal.openModal({ title: 'Create Display' })
+      this.modalTitle = 'Create Display'
+      this.modalOpen = true
     },
 
     openEdit(display) {
@@ -63,7 +66,16 @@ export function displaysPage() {
         slug: display.slug,
         description: display.description || '',
       }
-      this.$refs.modal.openModal({ title: 'Edit Display' })
+      this.modalTitle = 'Edit Display'
+      this.modalOpen = true
+    },
+
+    closeModal() {
+      this.modalOpen = false
+    },
+
+    handleBackdropClick(e) {
+      if (e.target === e.currentTarget) this.closeModal()
     },
 
     async save() {
@@ -75,7 +87,7 @@ export function displaysPage() {
           await api.displays.create(this.form)
           showToast('Display created')
         }
-        this.$refs.modal.closeModal()
+        this.closeModal()
         await this.load()
       } catch (e) {
         showToast(e.message, 'error')

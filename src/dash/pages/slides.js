@@ -23,6 +23,8 @@ export function slidesPage() {
     page: 1,
     perPage: 10,
     dragIndex: null,
+    modalOpen: false,
+    modalTitle: '',
 
     async init() {
       try {
@@ -89,7 +91,8 @@ export function slidesPage() {
         enabled: true,
         youtubeVideos: [''],
       }
-      this.$refs.modal.openModal({ title: 'Create Slide', size: 'lg' })
+      this.modalTitle = 'Create Slide'
+      this.modalOpen = true
     },
 
     openEdit(slide) {
@@ -107,7 +110,16 @@ export function slidesPage() {
           ? slide.youtubeVideos.map((v) => v.url)
           : [''],
       }
-      this.$refs.modal.openModal({ title: 'Edit Slide', size: 'lg' })
+      this.modalTitle = 'Edit Slide'
+      this.modalOpen = true
+    },
+
+    closeModal() {
+      this.modalOpen = false
+    },
+
+    handleBackdropClick(e) {
+      if (e.target === e.currentTarget) this.closeModal()
     },
 
     async save() {
@@ -127,7 +139,7 @@ export function slidesPage() {
           await api.slides.create(payload)
           showToast('Slide created')
         }
-        this.$refs.modal.closeModal()
+        this.closeModal()
         await this.load()
       } catch (e) {
         showToast(e.message, 'error')
