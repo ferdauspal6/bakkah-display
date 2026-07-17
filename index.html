@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bakkah Display — Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/src/styles/app.css">
+  <script type="module" src="/src/dash/app.js"></script>
+</head>
+<body class="antialiased" x-data="dashboard">
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside
+      x-data="sidebar"
+      :class="isOpen ? 'w-60' : 'w-16'"
+      class="flex-shrink-0 transition-all duration-300 flex flex-col border-r border-[#2a2a36]"
+      style="background: #0f0f13;"
+    >
+      <!-- Logo -->
+      <div class="h-16 flex items-center gap-3 px-4 border-b border-[#2a2a36]">
+        <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0" style="background: #3b82f6;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="3" width="18" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <span x-show="isOpen" x-cloak class="font-semibold text-sm text-[#f1f1f5]">Bakkah Display</span>
+      </div>
+
+      <!-- Nav Items -->
+      <nav class="flex-1 p-3 space-y-1">
+        <template x-for="item in menuItems" :key="item.id">
+          <button
+            @click="navigate(item.id)"
+            :class="currentPage === item.id
+              ? 'bg-[#3b82f6]/10 text-[#3b82f6] border border-[#3b82f6]/20'
+              : 'text-[#6b7280] hover:text-[#f1f1f5] hover:bg-[#1a1a22] border border-transparent'"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
+          >
+            <span x-html="getIcon(item.icon)" class="w-5 h-5 flex-shrink-0"></span>
+            <span x-show="isOpen" x-cloak x-text="item.label"></span>
+          </button>
+        </template>
+      </nav>
+
+      <!-- Toggle -->
+      <div class="p-3 border-t border-[#2a2a36]">
+        <button @click="isOpen = !isOpen" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-[#6b7280] hover:text-[#f1f1f5] hover:bg-[#1a1a22] transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          <span x-show="isOpen" x-cloak class="text-xs">Collapse</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="flex-1 flex flex-col min-w-0">
+      <!-- Top Navbar -->
+      <header x-data="navbar" class="h-16 glass flex items-center justify-between px-6 border-b border-[#2a2a36] flex-shrink-0">
+        <div class="flex items-center gap-4">
+          <h1 class="text-lg font-semibold text-[#f1f1f5]">Dashboard</h1>
+        </div>
+        <div class="flex items-center gap-4">
+          <select
+            x-model="selectedDisplayId"
+            @change="onDisplayChange(selectedDisplayId)"
+            class="input w-48 text-sm"
+          >
+            <option value="">All Displays</option>
+            <template x-for="d in displays" :key="d.id">
+              <option :value="d.id" x-text="d.name"></option>
+            </template>
+          </select>
+          <a :href="'/' + selectedDisplayId" target="_blank" class="btn btn-ghost btn-icon" title="Open Display">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+          <div class="w-8 h-8 rounded-full bg-[#3b82f6]/20 flex items-center justify-center text-sm font-medium text-[#3b82f6]">A</div>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <main class="flex-1 overflow-auto p-6">
+        <!-- Displays Page -->
+        <div x-show="currentPage === 'displays'" x-data="displaysPage" x-cloak class="fade-in">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h2 class="text-2xl font-bold text-[#f1f1f5]">Displays</h2>
+              <p class="text-sm text-[#6b7280] mt-1">Manage your display screens</p>
+            </div>
+            <button @click="openCreate" class="btn btn-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New Display
+            </button>
+          </div>
+
+          <div class="card overflow-hidden">
+            <!-- Search -->
+            <div class="p-4 border-b border-[#2a2a36]">
+              <input type="text" x-model="search" placeholder="Search displays..." class="input max-w-xs">
+            </div>
+
+            <div x-show="loading" class="p-8 text-center text-[#6b7280]">Loading...</div>
+
+            <template x-if="!loading">
+              <table class="table-base">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Slug</th>
+                    <th>Description</th>
+                    <th>Slides</th>
+                    <th>URL</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="d in paginated" :key="d.id">
+                    <tr>
+                      <td class="font-medium text-[#f1f1f5]!" x-text="d.name"></td>
+                      <td><code class="text-xs bg-[#24242e] px-2 py-0.5 rounded" x-text="d.slug"></code></td>
+                      <td x-text="d.description || '—'" class="text-[#6b7280]!"></td>
+                      <td><span class="badge" :class="'bg-[#3b82f6]/10 text-[#60a5fa]'" x-text="d.slidesCount || 0"></span></td>
+                      <td>
+                        <a :href="'/display/' + d.slug" target="_blank" class="text-[#3b82f6] hover:underline text-xs">
+                          /display/<span x-text="d.slug"></span>
+                        </a>
+                      </td>
+                      <td class="text-right">
+                        <button @click="openEdit(d)" class="btn btn-ghost btn-icon" title="Edit">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </button>
+                        <button @click="confirmDelete(d)" class="btn btn-ghost btn-icon text-[#ef4444]!" title="Delete">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        </button>
+                      </td>
+                    </tr>
+                  </template>
+                  <tr x-show="!paginated.length">
+                    <td colspan="6" class="text-center py-8 text-[#6b7280]">No displays found</td>
+                  </tr>
+                </tbody>
+              </table>
+            </template>
+
+            <!-- Pagination -->
+            <div x-show="pages > 1" class="flex items-center justify-between px-4 py-3 border-t border-[#2a2a36]">
+              <span class="text-xs text-[#6b7280]" x-text="`Page ${page} of ${pages}`"></span>
+              <div class="flex gap-2">
+                <button @click="prevPage" :disabled="page <= 1" class="btn btn-ghost text-xs! px-3!">Previous</button>
+                <button @click="nextPage" :disabled="page >= pages" class="btn btn-ghost text-xs! px-3!">Next</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal -->
+          <div x-ref="modal" x-data="modal" x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click="handleBackdropClick">
+            <div class="card w-full max-w-lg mx-4 p-6 fade-in" @click.stop>
+              <h3 class="text-lg font-semibold mb-6" x-text="title"></h3>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-[#9ca3af] mb-1.5">Name</label>
+                  <input type="text" x-model="form.name" @input="onNameInput" placeholder="e.g. Lobby" class="input">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-[#9ca3af] mb-1.5">Slug</label>
+                  <input type="text" x-model="form.slug" placeholder="e.g. lobby" class="input">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-[#9ca3af] mb-1.5">Description</label>
+                  <textarea x-model="form.description" placeholder="Main Lobby TV" class="input" rows="3"></textarea>
+                </div>
+              </div>
+              <div class="flex justify-end gap-3 mt-6">
+                <button @click="closeModal" class="btn btn-ghost">Cancel</button>
+                <button @click="$root.save()" class="btn btn-primary">
+                  <span x-text="editing ? 'Update' : 'Create'"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slides Page -->
+        <div x-show="currentPage === 'slides'" x-data="slidesPage" x-cloak class="fade-in">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h2 class="text-2xl font-bold text-[#f1f1f5]">Slides</h2>
+              <p class="text-sm text-[#6b7280] mt-1">Manage slides for each display</p>
+            </div>
+            <button @click="openCreate" class="btn btn-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New Slide
+            </button>
+          </div>
+
+          <!-- Display Selector -->
+          <div class="mb-6">
+            <select x-model="selectedDisplayId" @change="selectDisplay(selectedDisplayId)" class="input max-w-xs">
+              <option value="">Select a display...</option>
+              <template x-for="d in displays" :key="d.id">
+                <option :value="d.id" x-text="d.name"></option>
+              </template>
+            </select>
+          </div>
+
+          <template x-if="!selectedDisplayId">
+            <div class="card p-12 text-center text-[#6b7280]">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mx-auto mb-4 opacity-30"><rect x="3" y="3" width="18" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              <p class="text-sm">Select a display to manage its slides</p>
+            </div>
+          </template>
+
+          <template x-if="selectedDisplayId">
+            <div class="card overflow-hidden">
+              <div class="p-4 border-b border-[#2a2a36]">
+                <input type="text" x-model="search" placeholder="Search slides..." class="input max-w-xs">
+              </div>
+
+              <div x-show="loading" class="p-8 text-center text-[#6b7280]">Loading...</div>
+
+              <template x-if="!loading">
+                <table class="table-base">
+                  <thead>
+                    <tr>
+                      <th class="w-12">#</th>
+                      <th>Title</th>
+                      <th>Type</th>
+                      <th>Duration</th>
+                      <th>Enabled</th>
+                      <th class="text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template x-for="(s, i) in paginated" :key="s.id">
+                      <tr
+                        draggable="true"
+                        @dragstart="dragStart(i)"
+                        @dragover="dragOver($event, i)"
+                        @dragend="dragEnd"
+                        class="cursor-grab active:cursor-grabbing"
+                        :class="{ 'opacity-50': dragIndex === i }"
+                      >
+                        <td class="text-[#6b7280]!" x-text="s.sortOrder + 1"></td>
+                        <td class="font-medium text-[#f1f1f5]!" x-text="s.title"></td>
+                        <td>
+                          <span class="badge" :class="'badge-' + s.type" x-text="getSlideBadge(s.type)"></span>
+                        </td>
+                        <td x-text="s.duration + 's'"></td>
+                        <td>
+                          <button
+                            @click="toggleEnabled(s)"
+                            class="toggle"
+                            :class="{ active: s.enabled }"
+                          ></button>
+                        </td>
+                        <td class="text-right">
+                          <button @click="openEdit(s)" class="btn btn-ghost btn-icon" title="Edit">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                          </button>
+                          <button @click="confirmDelete(s)" class="btn btn-ghost btn-icon text-[#ef4444]!" title="Delete">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                          </button>
+                        </td>
+                      </tr>
+                    </template>
+                    <tr x-show="!paginated.length">
+                      <td colspan="6" class="text-center py-8 text-[#6b7280]">No slides found</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </template>
+
+              <div x-show="pages > 1" class="flex items-center justify-between px-4 py-3 border-t border-[#2a2a36]">
+                <span class="text-xs text-[#6b7280]" x-text="`Page ${page} of ${pages}`"></span>
+                <div class="flex gap-2">
+                  <button @click="prevPage" :disabled="page <= 1" class="btn btn-ghost text-xs! px-3!">Previous</button>
+                  <button @click="nextPage" :disabled="page >= pages" class="btn btn-ghost text-xs! px-3!">Next</button>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- Slide Modal -->
+          <div x-ref="modal" x-data="modal" x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click="handleBackdropClick">
+            <div class="card w-full max-w-2xl mx-4 p-6 fade-in max-h-[90vh] overflow-y-auto" @click.stop>
+              <h3 class="text-lg font-semibold mb-6" x-text="title"></h3>
+              <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-[#9ca3af] mb-1.5">Title</label>
+                    <input type="text" x-model="form.title" class="input">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-[#9ca3af] mb-1.5">Type</label>
+                    <select x-model="form.type" class="input">
+                      <option value="html">HTML Embed</option>
+                      <option value="iframe">Iframe Embed</option>
+                      <option value="image">Image</option>
+                      <option value="youtube">YouTube Playlist</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-[#9ca3af] mb-1.5">Duration (sec)</label>
+                    <input type="number" x-model="form.duration" min="1" class="input">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-[#9ca3af] mb-1.5">Sort Order</label>
+                    <input type="number" x-model="form.sortOrder" min="0" class="input">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-[#9ca3af] mb-1.5">Transition</label>
+                    <select x-model="form.transition" class="input">
+                      <option value="fade">Fade</option>
+                      <option value="none">None</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                  <button
+                    @click="form.enabled = !form.enabled"
+                    class="toggle"
+                    :class="{ active: form.enabled }"
+                  ></button>
+                  <span class="text-sm text-[#9ca3af]" x-text="form.enabled ? 'Enabled' : 'Disabled'"></span>
+                </div>
+
+                <!-- HTML content -->
+                <div x-show="form.type === 'html'">
+                  <label class="block text-sm font-medium text-[#9ca3af] mb-1.5">HTML Content</label>
+                  <textarea x-model="form.content" class="input font-mono text-xs" rows="8" placeholder="<div>Your HTML here</div>"></textarea>
+                </div>
+
+                <!-- Iframe URL -->
+                <div x-show="form.type === 'iframe'">
+                  <label class="block text-sm font-medium text-[#9ca3af] mb-1.5">Iframe URL</label>
+                  <input type="url" x-model="form.content" class="input" placeholder="https://example.com">
+                </div>
+
+                <!-- Image URL -->
+                <div x-show="form.type === 'image'">
+                  <label class="block text-sm font-medium text-[#9ca3af] mb-1.5">Image URL</label>
+                  <input type="url" x-model="form.content" class="input" placeholder="https://example.com/image.jpg">
+                </div>
+
+                <!-- YouTube URLs -->
+                <div x-show="form.type === 'youtube'">
+                  <label class="block text-sm font-medium text-[#9ca3af] mb-1.5">YouTube URLs</label>
+                  <template x-for="(url, i) in form.youtubeVideos" :key="i">
+                    <div class="flex gap-2 mb-2">
+                      <input type="url" x-model="form.youtubeVideos[i]" class="input" placeholder="https://youtu.be/xxxx">
+                      <button @click="removeYoutubeUrl(i)" x-show="form.youtubeVideos.length > 1" class="btn btn-ghost btn-icon flex-shrink-0 text-[#ef4444]!">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </div>
+                  </template>
+                  <button @click="addYoutubeUrl" class="btn btn-ghost text-xs! mt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add URL
+                  </button>
+                </div>
+              </div>
+              <div class="flex justify-end gap-3 mt-6">
+                <button @click="closeModal" class="btn btn-ghost">Cancel</button>
+                <button @click="$root.save()" class="btn btn-primary">
+                  <span x-text="editing ? 'Update' : 'Create'"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div x-show="currentPage === 'settings'" x-data="settingsPage" x-cloak class="fade-in max-w-2xl">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h2 class="text-2xl font-bold text-[#f1f1f5]">Settings</h2>
+              <p class="text-sm text-[#6b7280] mt-1">Configure application settings</p>
+            </div>
+          </div>
+
+          <div class="card p-6 space-y-5">
+            <div>
+              <label class="block text-sm font-medium text-[#9ca3af] mb-1.5">Company Name</label>
+              <input type="text" x-model="settings.companyName" class="input">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#9ca3af] mb-1.5">Prayer Times API URL</label>
+              <input type="url" x-model="settings.prayerApi" class="input" placeholder="https://api.example.com/prayer-times">
+              <p class="text-xs text-[#6b7280] mt-1">Leave empty to use mock data</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#9ca3af] mb-1.5">Refresh Interval (seconds)</label>
+              <input type="number" x-model="settings.refreshInterval" min="10" class="input">
+            </div>
+            <div class="flex justify-end">
+              <button @click="save" class="btn btn-primary">
+                <span x-text="saved ? 'Saved!' : 'Save Settings'"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <template x-if="toast">
+    <div class="toast" :class="'toast-' + toast.type" x-text="toast.message"></div>
+  </template>
+
+  <style>[x-cloak] { display: none !important; }</style>
+</body>
+</html>
