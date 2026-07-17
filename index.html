@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/src/styles/app.css">
   <script type="module" src="/src/dash/app.js"></script>
 </head>
-<body class="antialiased" x-data="dashboard">
+<body class="antialiased" x-data="dashboard" @navigate.window="navigate">
   <div class="flex h-screen overflow-hidden">
     <!-- Sidebar -->
     <aside
