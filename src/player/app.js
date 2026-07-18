@@ -43,7 +43,7 @@ Alpine.data('player', () => ({
         },
       })
 
-      this.engine.on((event) => {
+      this.engine.on(null, (event) => {
         if (event.type === 'countdown') {
           this.countdown = event.countdown
           this.countdownTotal = event.total

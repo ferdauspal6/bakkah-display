@@ -12,7 +12,7 @@ app.route('/api/slides', slides)
 
 app.get('/api/display/:slug', async (c) => {
   const db = (await import('../db/client')).createDb(c.env.D1_BACKEND)
-  const { eq } = await import('drizzle-orm')
+  const { eq, and } = await import('drizzle-orm')
   const { displays: displaysTbl, slides: slidesTbl, youtubeVideos } = await import('../db/schema')
   const slug = c.req.param('slug')
   const display = await db
@@ -24,8 +24,7 @@ app.get('/api/display/:slug', async (c) => {
   const slideList = await db
     .select()
     .from(slidesTbl)
-    .where(eq(slidesTbl.displayId, display.id))
-    .where(eq(slidesTbl.enabled, true))
+    .where(and(eq(slidesTbl.displayId, display.id), eq(slidesTbl.enabled, true)))
     .orderBy(slidesTbl.sortOrder)
     .all()
   const result = await Promise.all(

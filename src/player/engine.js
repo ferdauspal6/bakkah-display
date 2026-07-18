@@ -13,8 +13,10 @@ export class SlideEngine {
   }
 
   on(event, fn) {
-    this.listeners.add(fn)
-    return () => this.listeners.delete(fn)
+    const handler = typeof event === 'function' ? event : fn
+    if (!handler) return () => {}
+    this.listeners.add(handler)
+    return () => this.listeners.delete(handler)
   }
 
   emit(data) {
