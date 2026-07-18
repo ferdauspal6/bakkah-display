@@ -16,7 +16,7 @@ export function renderSlide(slide) {
       renderYoutube(slide, container)
       break
     default:
-      container.innerHTML = '<p style="color:#6b7280;">Unsupported slide type</p>'
+      container.innerHTML = '<p style="color:#94a3b8;">Unsupported slide type</p>'
   }
 
   return container
