@@ -10,7 +10,10 @@ export async function onRequest(context) {
 
   const url = new URL(request.url)
   const assetUrl = new URL('/player', url.origin)
-  const assetReq = new Request(assetUrl, request)
+  const assetReq = new Request(assetUrl, {
+    method: 'GET',
+    headers: { 'Cache-Control': 'no-cache' },
+  })
   const response = await fetch(assetReq)
   return response
 }
